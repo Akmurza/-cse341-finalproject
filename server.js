@@ -14,7 +14,7 @@ const port = process.env.PORT || 3000;
 
 // Github Oauth 
 app.use(session({
-  secret: "secretkey",
+  secret: process.env.SESSION_SECRET || "secretkey",
   resave: false,
   saveUninitialized: true
 }));

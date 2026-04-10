@@ -17,33 +17,38 @@ passport.deserializeUser(async (id, done) => {
   }
 });
 
-passport.use(
-  new GitHubStrategy(
-    {
-      clientID: process.env.GITHUB_CLIENT_ID,
-      clientSecret: process.env.GITHUB_CLIENT_SECRET,
-      callbackURL: process.env.GITHUB_CALLBACK_URL
-    },
-    async (accessToken, refreshToken, profile, done) => {
-      try {
-    
-        let user = await User.findOne({ oauthId: profile.id });
+if (
+  process.env.GITHUB_CLIENT_ID &&
+  process.env.GITHUB_CLIENT_SECRET &&
+  process.env.GITHUB_CALLBACK_URL
+) {
+  passport.use(
+    new GitHubStrategy(
+      {
+        clientID: process.env.GITHUB_CLIENT_ID,
+        clientSecret: process.env.GITHUB_CLIENT_SECRET,
+        callbackURL: process.env.GITHUB_CALLBACK_URL
+      },
+      async (accessToken, refreshToken, profile, done) => {
+        try {
+          let user = await User.findOne({ oauthId: profile.id });
 
-        if (!user) {
-          user = await User.create({
-            oauthId: profile.id,
-            name: profile.username,
-            email: profile.emails?.[0]?.value || null,
-            role: "user"
-          });
+          if (!user) {
+            user = await User.create({
+              oauthId: profile.id,
+              name: profile.username,
+              email: profile.emails?.[0]?.value || null,
+              role: "user"
+            });
+          }
+
+          return done(null, user);
+        } catch (err) {
+          return done(err, null);
         }
-
-        return done(null, user);
-      } catch (err) {
-        return done(err, null);
       }
-    }
-  )
-);
+    )
+  );
+}
 
 module.exports = passport;
