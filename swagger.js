@@ -6,20 +6,6 @@ const doc = {
     description: 'API documentation for the final project'
   },
 
-  host: "localhost:3000",
-  schemes: ["http"],
-
-  servers: [
-    {
-      url: "http://localhost:3000",
-      description: "Local development"
-    },
-    {
-      url: "https://cse341-finalproject-jeql.onrender.com",
-      description: "Production"
-    }
-  ],
-
   securityDefinitions: {
     bearerAuth: {
       type: "apiKey",
@@ -29,6 +15,14 @@ const doc = {
     }
   }
 };
+
+if (process.env.SWAGGER_HOST) {
+  doc.host = process.env.SWAGGER_HOST;
+}
+
+if (process.env.SWAGGER_SCHEMES) {
+  doc.schemes = process.env.SWAGGER_SCHEMES.split(',').map((item) => item.trim());
+}
 
 const outputFile = './docs/swagger.json';
 const endpointsFiles = [

@@ -42,8 +42,23 @@ app.use('/orders', require('./routes/ordersRoutes'));
 app.use('/reviews', require('./routes/reviewsRoutes'));
 app.use('/auth', require('./routes/authRoutes'));
 
+// Serve Swagger spec with runtime host/scheme so it works on Render and localhost.
+app.get('/swagger.json', (req, res) => {
+  const runtimeSwagger = {
+    ...swaggerDocument,
+    host: req.get('host'),
+    schemes: [req.protocol]
+  };
+
+  res.json(runtimeSwagger);
+});
+
 //Swagger documentation
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(null, {
+  swaggerOptions: {
+    url: '/swagger.json'
+  }
+}));
 
 // Only start the server if NOT in test mode
 if (process.env.NODE_ENV !== 'test') {

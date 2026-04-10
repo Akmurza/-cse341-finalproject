@@ -6,16 +6,6 @@
     "version": "1.0.0"
   },
   "host": "localhost:3000",
-  "servers": [
-    {
-      "url": "http://localhost:3000",
-      "description": "Local development"
-    },
-    {
-      "url": "https://cse341-finalproject-jeql.onrender.com",
-      "description": "Production"
-    }
-  ],
   "basePath": "/",
   "schemes": [
     "http"
