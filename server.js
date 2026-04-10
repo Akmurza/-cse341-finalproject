@@ -12,6 +12,9 @@ const GitHubStrategy = require('passport-github2').Strategy
 const app = express();
 const port = process.env.PORT || 3000;
 
+// Respect reverse-proxy headers (required on Render for correct https detection).
+app.set('trust proxy', 1);
+
 // Github Oauth 
 app.use(session({
   secret: process.env.SESSION_SECRET || "secretkey",
@@ -44,10 +47,14 @@ app.use('/auth', require('./routes/authRoutes'));
 
 // Serve Swagger spec with runtime host/scheme so it works on Render and localhost.
 app.get('/swagger.json', (req, res) => {
+  const forwardedProto = req.get('x-forwarded-proto');
+  const headerProto = forwardedProto ? forwardedProto.split(',')[0].trim().toLowerCase() : '';
+  const resolvedScheme = headerProto || req.protocol;
+
   const runtimeSwagger = {
     ...swaggerDocument,
     host: req.get('host'),
-    schemes: [req.protocol]
+    schemes: [resolvedScheme === 'https' ? 'https' : 'http']
   };
 
   res.json(runtimeSwagger);
