@@ -1,15 +1,65 @@
 const Order = require('../models/orderModel');
 
+const objectIdRegex = /^[0-9a-fA-F]{24}$/;
+
+const isValidObjectId = (value) => typeof value === 'string' && objectIdRegex.test(value);
+
+const validateOrderPayload = (payload, isUpdate = false) => {
+  const allowedFields = ['userId', 'products', 'totalPrice', 'status'];
+  const incomingFields = Object.keys(payload);
+
+  if (isUpdate) {
+    if (incomingFields.length === 0) {
+      return 'At least one field is required for update';
+    }
+
+    const hasInvalidField = incomingFields.some((field) => !allowedFields.includes(field));
+    if (hasInvalidField) {
+      return 'Payload contains unsupported field(s)';
+    }
+  } else {
+    if (!payload.userId || !payload.products || payload.totalPrice === undefined) {
+      return 'userId, products, and totalPrice are required';
+    }
+  }
+
+  if (payload.userId !== undefined && !isValidObjectId(payload.userId)) {
+    return 'userId must be a valid ObjectId';
+  }
+
+  if (payload.products !== undefined) {
+    if (!Array.isArray(payload.products) || payload.products.length === 0) {
+      return 'products must be a non-empty array';
+    }
+
+    const invalidProductId = payload.products.some((id) => !isValidObjectId(id));
+    if (invalidProductId) {
+      return 'All products entries must be valid ObjectId values';
+    }
+  }
+
+  if (payload.totalPrice !== undefined) {
+    if (typeof payload.totalPrice !== 'number' || Number.isNaN(payload.totalPrice) || payload.totalPrice < 0) {
+      return 'totalPrice must be a number greater than or equal to 0';
+    }
+  }
+
+  if (payload.status !== undefined && !['pending', 'completed'].includes(payload.status)) {
+    return 'status must be either pending or completed';
+  }
+
+  return null;
+};
+
 // CREATE ORDER
 const createOrder = async (req, res) => {
   try {
-    const { userId, products, totalPrice, status } = req.body;
-
-    if (!userId || !products || products.length === 0 || !totalPrice) {
-      return res.status(400).json({
-        message: 'userId, products, and totalPrice are required'
-      });
+    const validationError = validateOrderPayload(req.body);
+    if (validationError) {
+      return res.status(400).json({ message: validationError });
     }
+
+    const { userId, products, totalPrice, status } = req.body;
 
     const newOrder = new Order({ userId, products, totalPrice, status });
     const savedOrder = await newOrder.save();
@@ -48,6 +98,11 @@ const getOrderById = async (req, res) => {
 // UPDATE ORDER
 const updateOrder = async (req, res) => {
   try {
+    const validationError = validateOrderPayload(req.body, true);
+    if (validationError) {
+      return res.status(400).json({ message: validationError });
+    }
+
     const updatedOrder = await Order.findByIdAndUpdate(
       req.params.id,
       req.body,

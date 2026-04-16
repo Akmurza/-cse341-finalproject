@@ -17,4 +17,16 @@ describe('Users Routes', () => {
     expect([200, 404]).toContain(res.statusCode);
   });
 
+  test('GET /users should return JSON content type', async () => {
+    const res = await request(app).get('/users');
+
+    expect(res.headers['content-type']).toMatch(/application\/json/);
+  });
+
+  test('GET /users/:id with invalid id format should return 500', async () => {
+    const res = await request(app).get('/users/not-a-valid-id');
+
+    expect(res.statusCode).toBe(500);
+  });
+
 });

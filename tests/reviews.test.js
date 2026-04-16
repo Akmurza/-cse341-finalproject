@@ -17,4 +17,16 @@ describe('Reviews Routes', () => {
     expect([200, 404]).toContain(res.statusCode);
   });
 
+  test('GET /reviews should return JSON content type', async () => {
+    const res = await request(app).get('/reviews');
+
+    expect(res.headers['content-type']).toMatch(/application\/json/);
+  });
+
+  test('GET /reviews/:id with invalid id format should return 500', async () => {
+    const res = await request(app).get('/reviews/not-a-valid-id');
+
+    expect(res.statusCode).toBe(500);
+  });
+
 });

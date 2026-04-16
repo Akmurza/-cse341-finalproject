@@ -5,8 +5,10 @@ const isAuthenticated = require("../middleware/authMiddleware");
 // Create review
 router.post(
   '/',
+  isAuthenticated,
   /*
     #swagger.tags = ['Reviews']
+    #swagger.security = [{ "bearerAuth": [] }]
     #swagger.summary = 'Create a review'
     #swagger.parameters['body'] = {
       in: 'body',
@@ -46,6 +48,7 @@ router.put(
   isAuthenticated,
   /*
     #swagger.tags = ['Reviews']
+    #swagger.security = [{ "bearerAuth": [] }]
     #swagger.summary = 'Update review'
     #swagger.parameters['body'] = {
       in: 'body',
@@ -64,6 +67,7 @@ router.delete(
   '/:id',
   isAuthenticated,
   /* #swagger.tags = ['Reviews']
+     #swagger.security = [{ "bearerAuth": [] }]
      #swagger.summary = 'Delete review'
   */
   controller.deleteReview
